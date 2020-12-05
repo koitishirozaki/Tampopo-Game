@@ -4,16 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using MyBox;
-
-public enum PlayerState
-{
-    ATTACK,
-    COOLDOWN,
-}
+using UnityEngine.Assertions.Must;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public PlayerState playerState;
 
     [Foldout("Movement", true)]
     public float swipeMultiplier;
@@ -23,30 +17,26 @@ public class PlayerMovement : MonoBehaviour
 
     [Foldout("Attack", true)]
     public float minSpeedAtk;
-
-    // TIMER
     [ReadOnly] public bool timerActive;
-    [ReadOnly] public float timeCount;
+    [ReadOnly] public float maxTimer;
 
-    public float atkWindow = 1f;
     public float cooldown = 2f;
 
-    [ReadOnly] public bool hardCooldown;
+    [ReadOnly] public bool onCooldown;
     [ReadOnly] public bool canAttack;
-
 
     [Foldout("Rotation", true)]
     [ReadOnly] public float Angle;
     [ReadOnly] public float currentAngle;
     [ReadOnly] public float distanceSwiped;
 
-
-    public Text playerSpeed;
+    [Foldout("References", true)]
     private LeanRoll leanRoll;
     private Rigidbody rb;
     private PlayerAttack pAttk;
     public SpriteRenderer spriteRenderer;
 
+    
     // Start is called before the first frame update
     void Start()
     {
@@ -56,54 +46,53 @@ public class PlayerMovement : MonoBehaviour
 
         autoWalk = false;
         canAttack = true;
-        timeCount = 0;
+      
     }
 
     private void Update()
     {
-        playerSpeed.text = rb.velocity.magnitude.ToString();
 
-        if(timerActive)
-        timeCount += Time.deltaTime;
-
-        // Attack Window
-        if (timeCount > atkWindow)
-        {
-            timerActive = false;
-            timeCount = 0;
-
-            Debug.Log("cant attack window");
-            hardCooldown = true;
-             
-        }
-        if(hardCooldown)
-        {
-            canAttack = false;
-
-            timeCount += Time.deltaTime;
-
-            if (timeCount > cooldown)
-            {
-                canAttack = true;
-                hardCooldown = false;
-
-                timeCount = 0;
-            }
-        }
-
+        ResetCombo(timerActive);
+        if (onCooldown) canAttack = false;
+        else canAttack = true;
     }
 
     void FixedUpdate()
     {
-
         if (autoWalk) AutoWalk();
 
         // Attack
         if (rb.velocity.magnitude > minSpeedAtk && canAttack) pAttk.TriggerON();
         else if (rb.velocity.magnitude < minSpeedAtk) pAttk.TriggerOFF();
     }
-
     
+    void ResetCombo(bool whatever)
+    {
+        if(whatever)
+        {
+            maxTimer -= Time.deltaTime;
+
+            if (maxTimer <= 0)
+            {
+                timerActive = false;
+                canAttack = false;
+                maxTimer = 0;
+
+                StartCoroutine(Cooldown());
+            }
+            else canAttack = true;
+        }
+    }
+
+    IEnumerator Cooldown()
+    {
+        onCooldown = true;
+        yield return new WaitForSecondsRealtime(cooldown);
+
+        onCooldown = false;
+        canAttack = true;
+    }
+
     public void OnDistance(float distance)
     {
         distanceSwiped = distance;
@@ -128,20 +117,19 @@ public class PlayerMovement : MonoBehaviour
         rb.AddForce(vectorApplied);
 
         yield return new WaitForSeconds(0.2f);
+        
         distanceSwiped = 0;
         autoWalk = true;
-
-        timerActive = true;
     }
 
     
     void AutoWalk()
     {
+
         Vector3 vector_autoWalk = transform.position + transform.forward * autoWalkSpeed;
         rb.MovePosition(vector_autoWalk);
     }
     
-
     public void Stop(LeanFinger leanFinger)
     {
         if (leanFinger.Tap)
