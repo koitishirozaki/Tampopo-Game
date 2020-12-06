@@ -14,6 +14,7 @@ public class PlayerMovement : MonoBehaviour
     public float autoWalkSpeed;
     public float maxDistance;
     [ReadOnly] public bool autoWalk;
+    public bool swipeHappened;
 
     [Foldout("Attack", true)]
     public float minSpeedAtk;
@@ -34,12 +35,15 @@ public class PlayerMovement : MonoBehaviour
     private LeanRoll leanRoll;
     private Rigidbody rb;
     private PlayerAttack pAttk;
+    private Animator pAnimator;
     public SpriteRenderer spriteRenderer;
 
+    public Text playerstateText;
     
     // Start is called before the first frame update
     void Start()
     {
+        pAnimator = GetComponentInChildren<Animator>();
         leanRoll = GetComponent<LeanRoll>();
         rb = GetComponent<Rigidbody>();
         pAttk = GetComponent<PlayerAttack>();
@@ -53,6 +57,7 @@ public class PlayerMovement : MonoBehaviour
     {
 
         ResetCombo(timerActive);
+
         if (onCooldown) canAttack = false;
         else canAttack = true;
     }
@@ -60,10 +65,15 @@ public class PlayerMovement : MonoBehaviour
     void FixedUpdate()
     {
         if (autoWalk) AutoWalk();
+        else
+        {
+            pAnimator.SetBool("isWalking", false);
+            pAnimator.SetBool("idle", true);
+        }
 
         // Attack
         if (rb.velocity.magnitude > minSpeedAtk && canAttack) pAttk.TriggerON();
-        else if (rb.velocity.magnitude < minSpeedAtk) pAttk.TriggerOFF();
+        else if (rb.velocity.magnitude < minSpeedAtk && pAttk.isTriggerON) pAttk.TriggerOFF();
     }
     
     void ResetCombo(bool whatever)
@@ -72,25 +82,32 @@ public class PlayerMovement : MonoBehaviour
         {
             maxTimer -= Time.deltaTime;
 
-            if (maxTimer <= 0)
+            playerstateText.text = "WINDOW";
+            playerstateText.color = Color.cyan;
+
+            if (maxTimer <=  0)
             {
                 timerActive = false;
                 canAttack = false;
-                maxTimer = 0;
-
+                
                 StartCoroutine(Cooldown());
             }
-            else canAttack = true;
         }
     }
 
     IEnumerator Cooldown()
     {
+        playerstateText.text = "COOLDOWN";
+        playerstateText.color = Color.red;
+
         onCooldown = true;
         yield return new WaitForSecondsRealtime(cooldown);
 
         onCooldown = false;
         canAttack = true;
+
+        playerstateText.text = "CAN ATTACK";
+        playerstateText.color = Color.green;
     }
 
     public void OnDistance(float distance)
@@ -98,10 +115,10 @@ public class PlayerMovement : MonoBehaviour
         distanceSwiped = distance;
         rb.velocity = Vector3.zero;
 
-    
         // Dashing
         if (distanceSwiped != 0 && canAttack)
         {
+   
             StartCoroutine(Dash());
         }
     }
@@ -116,8 +133,11 @@ public class PlayerMovement : MonoBehaviour
 
         rb.AddForce(vectorApplied);
 
+        pAnimator.SetTrigger("Dashing");
+        pAnimator.SetBool("idle", false);
+
         yield return new WaitForSeconds(0.2f);
-        
+
         distanceSwiped = 0;
         autoWalk = true;
     }
@@ -125,15 +145,20 @@ public class PlayerMovement : MonoBehaviour
     
     void AutoWalk()
     {
-
         Vector3 vector_autoWalk = transform.position + transform.forward * autoWalkSpeed;
+
         rb.MovePosition(vector_autoWalk);
+
+        pAnimator.SetBool("isWalking", true);
+        pAnimator.SetBool("idle", false);
     }
     
     public void Stop(LeanFinger leanFinger)
     {
         if (leanFinger.Tap)
         {
+            pAnimator.SetBool("idle", true);
+
             autoWalk = false;
             canAttack = true;
             rb.velocity = Vector3.zero;
@@ -142,7 +167,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void RotatePlayer(Vector2 delta)
     {
-        if (delta.sqrMagnitude > 0.0f)
+        if (delta.sqrMagnitude > 0.0f && canAttack)
         {
             Angle = Mathf.Atan2(delta.x, delta.y) * Mathf.Rad2Deg;
             var factor = LeanTouch.GetDampenFactor(-1, Time.deltaTime);

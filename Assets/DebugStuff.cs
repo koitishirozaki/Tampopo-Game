@@ -8,6 +8,7 @@ public class DebugStuff : MonoBehaviour
     public Text playerSpeed;
     public Text canAtk;
     public Text oncd;
+    public Text timer;
 
     public PlayerMovement pMov;
     public Rigidbody pRb;
@@ -24,6 +25,7 @@ public class DebugStuff : MonoBehaviour
         playerSpeed.text = pRb.velocity.magnitude.ToString();
         oncd.text = pMov.onCooldown.ToString();
         canAtk.text = pMov.canAttack.ToString();
+        timer.text = pMov.maxTimer.ToString();
     }
 
     public void HalfTime()

@@ -21,6 +21,7 @@ public class PlayerAttack : MonoBehaviour
     public SpriteRenderer renderer;
 
     private bool onWait;
+    public bool isTriggerON;
 
     // Start is called before the first frame update
     void Start()
@@ -42,12 +43,14 @@ public class PlayerAttack : MonoBehaviour
 
             health.Invencivel(true);
             renderer.color = Color.red;
-       
+            isTriggerON = true;
         }
     }
 
     public void TriggerOFF()
     {
+
+
         if (onWait)
         {
             if(hitStuff.Count > 0)
@@ -69,11 +72,11 @@ public class PlayerAttack : MonoBehaviour
             cGravity.Gravitation(true);
             onWait = false;
 
-
+            Debug.Log("trigger should turn off");
             health.Invencivel(false);
             renderer.color = Color.white;
 
-            
+            isTriggerON = false;
         }
     }
 

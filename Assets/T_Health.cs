@@ -37,6 +37,14 @@ public class T_Health : MonoBehaviour
         EuSouINVENCIVEL = ehmesmo;
     }
 
+    public IEnumerator InvencivelTime(float time)
+    {
+        EuSouINVENCIVEL = true;
+
+        yield return new WaitForSecondsRealtime(time);
+        EuSouINVENCIVEL = false;
+    }
+
     void Dead()
     {
         Debug.Log("dis guy is ded");
