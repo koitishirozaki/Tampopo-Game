@@ -10,7 +10,7 @@ public class DebugStuff : MonoBehaviour
     public Text oncd;
     public Text timer;
 
-    public PlayerMovement pMov;
+    public PlayerController pMov;
     public Rigidbody pRb;
 
     // Start is called before the first frame update

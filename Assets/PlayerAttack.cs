@@ -13,7 +13,7 @@ public class PlayerAttack : MonoBehaviour
     private Collider pCollider;
     private Rigidbody rb;
     private CustomGravity cGravity;
-    private PlayerMovement pMovement;
+    private PlayerController pMovement;
     private T_Health health;
 
     public List<GameObject> hitStuff = new List<GameObject>();
@@ -26,7 +26,7 @@ public class PlayerAttack : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        pMovement = GetComponent<PlayerMovement>();
+        pMovement = GetComponent<PlayerController>();
         pCollider = GetComponent<Collider>();
         rb = GetComponent<Rigidbody>();
         cGravity = GetComponent<CustomGravity>();

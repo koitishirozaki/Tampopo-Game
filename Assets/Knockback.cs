@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEditorInternal;
 using UnityEngine;
 
 public class Knockback : MonoBehaviour
@@ -8,33 +7,42 @@ public class Knockback : MonoBehaviour
     public float knockbackForce;
     public int contactDamage;
 
-    private void OnTriggerEnter(Collider other)
+    private GameObject playerObject;
+    private Rigidbody targetRb;
+    private T_Health targetHealth;
+    private PlayerController pMove;
+
+    private void OnTriggerStay(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            GameObject playerObject = other.gameObject;
+            CacheComponents(other);
 
-            Rigidbody target = playerObject.GetComponent<Rigidbody>();
-            T_Health health = playerObject.GetComponent<T_Health>();
-            PlayerMovement pMove = playerObject.GetComponent<PlayerMovement>();
-
-            if (!health.EuSouINVENCIVEL)
+            if (!targetHealth.EuSouINVENCIVEL)
             {
-                if (target != null)
+                if (targetRb != null)
                 {
-                    Vector3 distanceB2PlayerObject = transform.position - target.position;
-                    target.AddForce(-distanceB2PlayerObject * knockbackForce * 1000);
+                    Vector3 distanceB2PlayerObject = transform.position - targetRb.position;
+                    targetRb.AddForce(-distanceB2PlayerObject * knockbackForce * 1000);
                     pMove.autoWalk = false;
-                }
-                if (health != null)
-                {
-                    health.TakeSimpleDamage(contactDamage);
+
+                    targetHealth.TakeSimpleDamage(contactDamage);
                 }
 
-                StartCoroutine(health.InvencivelTime(0.3f));
+                StartCoroutine(targetHealth.InvencivelTime(1f));
             }
             
         }
+
+    }
+
+    void CacheComponents(Collider other)
+    {
+        playerObject = other.gameObject;
+
+        targetRb = playerObject.GetComponent<Rigidbody>();
+        targetHealth = playerObject.GetComponent<T_Health>();
+        pMove = playerObject.GetComponent<PlayerController>();
 
     }
 

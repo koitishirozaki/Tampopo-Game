@@ -14,6 +14,7 @@ public class CustomGravity : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
+        isGravityON = true;
     }
 
     private void FixedUpdate()
@@ -27,8 +28,7 @@ public class CustomGravity : MonoBehaviour
 
     public void Gravitation(bool parameter)
     {
-        if(parameter) isGravityON = true;
-        else if(!parameter) isGravityON = false;
+        isGravityON = parameter;
     }
 
 
