@@ -1,3 +1,3 @@
 # CatRobot
  
- Projeto de jogo mobile onde jogador dá uns swipes e o personagem dá um dash no ângulo do swipe.
+A half-baked Unity project whereas you control a cat that dabs towards the swipe direction you input.
